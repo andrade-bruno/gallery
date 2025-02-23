@@ -4,7 +4,7 @@ import fs from "fs";
 
 const app = express();
 const PORT = 3000;
-const path = "/media/bruno-andrade/HDD/photos/Lixeira"; // path.join(__dirname, "../photos");
+const path = "/media/bruno-andrade/HDD/photos/Lixeira";
 
 // Enable CORS for frontend access
 app.use(cors());
