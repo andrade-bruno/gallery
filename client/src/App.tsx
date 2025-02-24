@@ -4,7 +4,7 @@ import { File } from "./interfaces/file";
 const App = () => {
   const currentYear = new Date().getFullYear();
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(currentYear);
 
   useEffect(() => {
     async function fetchFiles() {
