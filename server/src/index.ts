@@ -3,7 +3,7 @@ import cors from "cors";
 import fs from "fs";
 import { readFile } from "fs/promises";
 import path from "path";
-import { ImagesResponse, File } from "./interfaces/file";
+import { SingleScanResponse, File } from "./interfaces/file";
 import { Metadata } from "./interfaces/google";
 
 const app = express();
@@ -17,8 +17,8 @@ app.use(express.json());
 
 app.use("/image", express.static(root));
 
-app.post("/basic", (req: Request, res: Response) => {
-  const target = req.body?.folder ? root + `${req.body?.folder}` : root;
+app.get("/single-scan/:target?", (req: Request, res: Response) => {
+  const target = req.params.target ? root + `${req.params.target}` : root;
 
   fs.readdir(target, (err, files) => {
     if (err) {
@@ -30,7 +30,7 @@ app.post("/basic", (req: Request, res: Response) => {
       fs.statSync(path.join(target, file)).isDirectory()
     );
 
-    const output: ImagesResponse = {
+    const output: SingleScanResponse = {
       files: images,
       folders,
     };

@@ -1,6 +1,6 @@
 import { Metadata } from "./google";
 
-export interface ImagesResponse {
+export interface SingleScanResponse {
   files: string[];
   folders: string[];
 }
