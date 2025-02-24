@@ -6,10 +6,12 @@ import path from "path";
 import { SingleScanResponse, File } from "./interfaces/file";
 import { Metadata } from "./interfaces/google";
 import heicConvert from "heic-convert";
+import { platform } from "os";
 
 const app = express();
 const PORT = 8000;
-const root = "/media/bruno-andrade/HDD/photos/";
+const root =
+  platform() == "linux" ? "/media/bruno-andrade/HDD/photos/" : "E:/photos/";
 const regExp = /\.(jpg|jpeg|png|gif|heic|heif|mp4|mov|mkv)$/i;
 
 // Enable CORS for frontend access
