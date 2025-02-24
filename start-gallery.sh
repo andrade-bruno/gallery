@@ -20,11 +20,11 @@ start() {
         # Linux: Use gnome-terminal
         gnome-terminal --geometry=90x20 \
             --tab-with-profile=default -t server --working-directory="$server" -e "bash -ci 'clear && yarn start'" \
-            --tab-with-profile=default -t client --working-directory="$client" -e "bash -ci 'clear && rm -rf node_modules && yarn install && yarn start'" 
+            --tab-with-profile=default -t client --working-directory="$client" -e "bash -ci 'clear && yarn install && yarn start'" 
     elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
         # Windows (MSYS2/MINGW64): Use mintty
         mintty -t "Server" -e bash -ci "cd '$server' && clear && yarn start; exec bash" &
-        mintty -t "Client" -e bash -ci "cd '$client' && clear && rm -rf node_modules && yarn install && yarn start; exec bash" &
+        mintty -t "Client" -e bash -ci "cd '$client' && clear && yarn install && yarn start; exec bash" &
     else
         echo "Unsupported OS: $OSTYPE"
     fi
@@ -34,6 +34,8 @@ if [ ! -d "$src" ]; then
     printf "\nDirectory "$src" not found, check your path\n\n"
 else
 	cd $src
+
+    merge_main
 	sleep 2
 	start
 fi
