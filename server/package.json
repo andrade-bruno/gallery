@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx tsc && nodemon dist/index.js"
+    "start": "npx tsc && nodemon src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.5",
     "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   }
 }
