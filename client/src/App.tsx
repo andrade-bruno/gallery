@@ -77,7 +77,11 @@ const App = () => {
             key={`${data} ${idx}`}
             src={data.fetch}
             alt={data.name}
-            title={data.metadata?.photoTakenTime.formatted || data.path}
+            title={
+              (data.metadata?.photoTakenTime.formatted || data.path) +
+              " " +
+              data.name
+            }
             width={200}
             style={{ margin: "1rem", height: "auto", width: "16rem" }}
           />
