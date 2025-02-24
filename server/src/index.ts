@@ -9,7 +9,7 @@ import heicConvert from "heic-convert";
 
 const app = express();
 const PORT = 8000;
-const root = "/media/bruno-andrade/HDD/photos-backup/";
+const root = "/media/bruno-andrade/HDD/photos/";
 const regExp = /\.(jpg|jpeg|png|gif|heic|heif|mp4|mov|mkv)$/i;
 
 // Enable CORS for frontend access
