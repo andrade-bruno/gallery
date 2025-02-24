@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { File } from "./interfaces/file";
 
 const App = () => {
+  const currentYear = new Date().getFullYear();
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(
-    new Date().getFullYear()
-  );
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchFiles() {
@@ -49,6 +48,10 @@ const App = () => {
     });
   }, [filtered]);
 
+  const years = useMemo(() => {
+    return Array.from({ length: 11 }, (_, index) => currentYear - index);
+  }, [currentYear]);
+
   return (
     <div>
       <h1>Bruno's Gallery</h1>
@@ -57,12 +60,14 @@ const App = () => {
         Year{" "}
         <select
           onChange={(e) => setSelectedYear(Number(e.target.value))}
-          defaultValue="2024"
+          defaultValue={currentYear}
         >
           <option value="">All Years</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-          <option value="2022">2022</option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
         </select>
       </label>
 
