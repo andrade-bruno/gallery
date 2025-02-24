@@ -1,9 +1,9 @@
 import { Metadata } from "./google";
 
-export interface ImagesResponse {
+export type ImagesResponse = {
   files: string[];
   folders: string[];
-}
+};
 
 export interface File {
   name: string;
