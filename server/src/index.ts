@@ -6,9 +6,11 @@ import path from "path";
 import { SingleScanResponse, File } from "./interfaces/file";
 import { Metadata } from "./interfaces/google";
 import heicConvert from "heic-convert";
-import { platform } from "os";
+import dotenv from "dotenv";
 
-const PORT = 8000;
+dotenv.config();
+
+const PORT = Number(process.env.PORT);
 
 const app = express();
 app.use(cors());
@@ -17,9 +19,9 @@ app.use(express.json());
 const regExp = /\.(jpg|jpeg|png|gif|heic|heif|mp4|mov|mkv)$/i;
 const useHeicCoversor = false;
 
-const drive = platform() == "linux" ? "/media/bruno-andrade/HDD" : "E:/";
-const root = "/home/bruno-andrade/Desktop/selected";
-const metadatasDir = `${drive}/photos`;
+const drive = process.env.DRIVE as string;
+const root = process.env.ROOT as string;
+const metadatasDir = process.env.METADATA as string;
 
 app.get("/image/*", async (req: Request, res: Response) => {
   const requestedPath = req.params[0] || "";
@@ -94,6 +96,7 @@ async function getMetadataMap(dir: string): Promise<Map<string, Metadata>> {
         try {
           const content = await readFile(fullPath, "utf-8");
           const metadata = JSON.parse(content);
+
           // Use the file name without the .json extension as the key
           const baseNameWithImageType = item.name.slice(0, -5); // remove ".json"
           const baseName = path.basename(
