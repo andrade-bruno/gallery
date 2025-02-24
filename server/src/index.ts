@@ -5,17 +5,47 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { SingleScanResponse, File } from "./interfaces/file";
 import { Metadata } from "./interfaces/google";
+import heicConvert from "heic-convert";
 
 const app = express();
 const PORT = 8000;
 const root = "/media/bruno-andrade/HDD/photos-backup/";
-const regExp = /\.(jpg|jpeg|png|gif|heic|mp4|mov|mkv)$/i;
+const regExp = /\.(jpg|jpeg|png|gif|heic|heif|mp4|mov|mkv)$/i;
 
 // Enable CORS for frontend access
 app.use(cors());
 app.use(express.json());
 
-app.use("/image", express.static(root));
+app.get("/image/*", async (req: Request, res: Response) => {
+  const requestedPath = req.params[0] || "";
+  const filePath = path.join(root, requestedPath);
+
+  try {
+    const ext = path.extname(filePath);
+    if ([".heic", ".heif"].includes(ext.toLowerCase())) {
+      // const data = await sharp(filePath).toFormat("jpeg").toBuffer();
+      const inputBuffer = await fs.promises.readFile(filePath);
+      const data = await heicConvert({
+        buffer: inputBuffer, // the HEIC file buffer
+        format: "JPEG", // output format
+        quality: 1, // quality between 0 and 1
+      });
+
+      res.set("Content-Type", "image/jpeg");
+      res.send(data);
+      return;
+    }
+
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send("File not found");
+    }
+  } catch (error) {
+    console.error("Error processing image:", error);
+    res.status(500).send("Error processing image");
+  }
+});
 
 app.get("/single-scan/:target?", (req: Request, res: Response) => {
   const target = req.params.target ? root + `${req.params.target}` : root;
@@ -85,6 +115,7 @@ async function getFilesWithMetadata(dir: string): Promise<File[]> {
 
 app.get("/all-files/:target?", async (req: Request, res: Response) => {
   const target = req.params?.target ? root + req.params?.target : root;
+
   try {
     const files = await getFilesWithMetadata(target);
     res.json(files);
