@@ -11,3 +11,7 @@ export interface File {
   fetch: string;
   metadata: Metadata | null;
 }
+
+export interface LocalMetadata {
+  path: string;
+}

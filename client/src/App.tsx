@@ -4,7 +4,7 @@ import { File } from "./interfaces/file";
 const App = () => {
   const currentYear = new Date().getFullYear();
   const [files, setFiles] = useState<File[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(currentYear);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchFiles() {
@@ -60,7 +60,7 @@ const App = () => {
         Year{" "}
         <select
           onChange={(e) => setSelectedYear(Number(e.target.value))}
-          defaultValue={currentYear}
+          defaultValue=""
         >
           <option value="">All Years</option>
           {years.map((year) => (
