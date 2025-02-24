@@ -7,6 +7,7 @@ import { SingleScanResponse, File } from "./interfaces/file";
 import { Metadata } from "./interfaces/google";
 import heicConvert from "heic-convert";
 import dotenv from "dotenv";
+import { platform } from "os";
 
 dotenv.config();
 
@@ -19,23 +20,21 @@ app.use(express.json());
 const regExp = /\.(jpg|jpeg|png|gif|heic|heif|mp4|mov|mkv)$/i;
 const useHeicCoversor = false;
 
-const drive = process.env.DRIVE as string;
 const root = process.env.ROOT as string;
 const metadatasDir = process.env.METADATA as string;
 
 app.get("/image/*", async (req: Request, res: Response) => {
-  const requestedPath = req.params[0] || "";
-  const filePath = path.join(root, requestedPath);
+  const fullPath = req.params[0] || "";
 
   try {
-    const ext = path.extname(filePath);
+    const ext = path.extname(fullPath);
 
     if (useHeicCoversor && [".heic", ".heif"].includes(ext.toLowerCase())) {
       // const data = await sharp(filePath).toFormat("jpeg").toBuffer();
-      const inputBuffer = await fs.promises.readFile(filePath);
+      const inputBuffer = await fs.promises.readFile(fullPath);
       const data = await heicConvert({
         buffer: inputBuffer, // the HEIC file buffer
-        format: "JPEG", // output format
+        format: "PNG", // output format
         quality: 1, // quality between 0 and 1
       });
 
@@ -44,14 +43,22 @@ app.get("/image/*", async (req: Request, res: Response) => {
       return;
     }
 
-    if (fs.existsSync(filePath)) {
-      res.sendFile(filePath);
+    const isFile = fs.existsSync(fullPath) && fs.statSync(fullPath).isFile();
+
+    if (isFile) {
+      res.setHeader(
+        "Content-Type",
+        `image/${ext.replace(".", "").toLowerCase()}`
+      );
+      res.sendFile(fullPath);
     } else {
-      res.status(404).send("File not found");
+      res.status(404).json("File not found");
     }
   } catch (error) {
-    console.error(`Error processing image: ${filePath}\n`, error);
-    res.status(500).send("Error processing image");
+    const message = `Error processing image at [${fullPath}]\n`;
+    console.error(error);
+    console.error(message);
+    res.status(500).json(message);
   }
 });
 
@@ -82,8 +89,10 @@ app.get("/single-scan/:target?", (req: Request, res: Response) => {
  */
 async function getMetadataMap(dir: string): Promise<Map<string, Metadata>> {
   const map = new Map<string, Metadata>();
+
   try {
     const items = fs.readdirSync(dir, { withFileTypes: true });
+
     for (const item of items) {
       const fullPath = path.join(dir, item.name);
       if (item.isDirectory()) {
@@ -95,7 +104,7 @@ async function getMetadataMap(dir: string): Promise<Map<string, Metadata>> {
       } else if (item.isFile() && item.name.endsWith(".json")) {
         try {
           const content = await readFile(fullPath, "utf-8");
-          const metadata = JSON.parse(content);
+          const parsed = JSON.parse(content);
 
           // Use the file name without the .json extension as the key
           const baseNameWithImageType = item.name.slice(0, -5); // remove ".json"
@@ -103,10 +112,8 @@ async function getMetadataMap(dir: string): Promise<Map<string, Metadata>> {
             baseNameWithImageType,
             path.extname(baseNameWithImageType)
           );
-          map.set(baseName, {
-            path: fullPath,
-            ...metadata,
-          } as Metadata);
+          const metadata: Metadata = parsed;
+          map.set(baseName, metadata);
         } catch (error) {
           console.error(`Error reading metadata file: ${fullPath}`, error);
         }
@@ -115,6 +122,7 @@ async function getMetadataMap(dir: string): Promise<Map<string, Metadata>> {
   } catch (error) {
     console.error("Error scanning for metadata files", error);
   }
+
   return map;
 }
 
@@ -127,11 +135,16 @@ async function getFilesWithMetadata(
   metadataMap: Map<string, Metadata>
 ): Promise<File[]> {
   let result: File[] = [];
+
   try {
     const items = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const item of items) {
-      const fullPath = path.join(dir, item.name);
+      let fullPath = path.join(dir, item.name);
+
+      if (platform() == "win32") {
+        fullPath = fullPath.split(path.sep).join("/");
+      }
 
       if (item.isDirectory()) {
         // Process subfolders recursively
@@ -139,9 +152,10 @@ async function getFilesWithMetadata(
         result = result.concat(subFiles);
       } else if (item.isFile() && regExp.test(item.name)) {
         const imageBaseName = path.basename(item.name, path.extname(item.name));
+
         const file: File = {
           path: fullPath,
-          fetch: `http://localhost:${PORT}/image/${fullPath.replace(root, "")}`,
+          fetch: `http://localhost:${PORT}/image/${fullPath}`,
           name: item.name,
           metadata: null,
         };
@@ -176,5 +190,5 @@ app.get("/all-files/:target?", async (req: Request, res: Response) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.info(`Server running at http://localhost:${PORT}`);
 });

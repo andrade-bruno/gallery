@@ -1,6 +1,4 @@
-import { LocalMetadata } from "./file";
-
-export interface Metadata extends LocalMetadata {
+export interface Metadata {
   title: string;
   description: string;
   imageViews: string;
